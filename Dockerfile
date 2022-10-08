@@ -49,7 +49,6 @@ RUN cp /etc/mecabrc /etc/mecabrc.default
 RUN cat /etc/mecabrc.default | sed -e "s/^dicdir/; dicdir/" \
     | sed -e "/; dicdir/a dicdir = $(find / -path */mecab/dic/mecab-ipadic-neologd 2> /dev/null | head -1)" \
     > $MECABRC
-COPY tests/mecab/test_mecab.sh ./tests/mecab/test_mecab.sh
 RUN rm -rf mecab-ipadic-neologd
 
 # --- Delete unnecessary packages ---
@@ -75,4 +74,4 @@ RUN poetry install
 RUN jupyter lab build --minimize False
 RUN jupyter notebook --generate-config
 
-CMD sh ./tests/mecab/test_mecab.sh
+CMD jupyter lab --allow-root --ip 0.0.0.0 --port ${PORT}
