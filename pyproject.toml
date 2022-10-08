@@ -1,27 +1,48 @@
 [tool.poetry]
-name = "nlpkit"
+name = "vnlpkit"
 version = "1.0.0"
-description = "Custom modules for Natural Language Processing"
+description = "Custom modules for financial analysis"
 authors = ["v-crn <var.cyrano@gmail.com>"]
 
 [virtualenvs]
-in-project = true
+in-project = false
 
 [tool.poetry.dependencies]
-python = ">=3.9,<3.10"
-category-encoders = "^2.2.2"
-numpy = "^1.21.2"
-pandas = "^1.3.2"
-tqdm = "^4.62.2"
+python = ">=3.8,<3.11"
+python-dotenv = "*"
+numpy = "*"
+pandas = "*"
+tqdm = "*"
+matplotlib = "*"
+japanize-matplotlib = "*"
+seaborn = "*"
+mojimoji = "*"
+jaconv = "*"
+emoji = "*"
+nltk = "*"
+mecab-python3 = "*"
+ginza = "*"
+wordcloud = "*"
 
 [tool.poetry.dev-dependencies]
-isort = "^5.9.3"
-black = "^21.7b0"
-autoflake = "^1.4"
-flake8 = "^3.9.2"
-mypy = "^0.910"
-pyproject-flake8 = "^0.0.1a2"
-pytest = "^6.2.4"
+isort = "*"
+click = "*"
+black = "*"
+autoflake = "*"
+flake8 = "*"
+mypy = "*"
+pyproject-flake8 = "*"
+pytest = "*"
+jupyterlab = "*"
+ipywidgets = "*"
+jupyterlab-widgets = "*"
+jupyterlab-git = "*"
+jupytext = "*"
+jupyterlab-code-formatter = "*"
+jupyterlab-lsp = "*"
+lckr-jupyterlab-variableinspector = "*"
+jupyterlab-flake8 = "*"
+jupyter-kite = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
