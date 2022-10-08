@@ -1,4 +1,5 @@
 include .env
+include makefiles/utils.mk
 
 FILE=tests/
 FUNC=""

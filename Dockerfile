@@ -1,57 +1,78 @@
-FROM python:3.10-slim
-ENV PYTHONUNBUFFERED=true
+FROM python:3.10-slim-buster
 WORKDIR /root
+ENV PYTHONUNBUFFERED=true
+ENV PYTHONPATH /root:$PYTHONPATH
 
-RUN apt update -y \
-    && apt install -y --no-install-recommends \
+RUN apt update && apt install -y \
     sudo \
+    vim \
     curl \
     wget \
     git \
-    gcc \
-    g++ \
     build-essential \
-    nodejs \
-    npm \
-    ca-certificates \
-    software-properties-common \
+    npm
+
+# --- NodeJS ---
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+RUN apt install -y nodejs
+
+# -- Locales ---
+RUN apt update && apt install -y locales
+RUN localedef -f UTF-8 -i ja_JP ja_JP.UTF-8
+ENV LANG ja_JP.UTF-8
+ENV LANGUAGE ja_JP:ja
+ENV LC_ALL ja_JP.UTF-8
+ENV TZ JST-9
+ENV TERM xterm
+
+# --- Fonts ---
+RUN apt update && apt install -y \
+    fontconfig \
+    fonts-ipaexfont
+
+# --- MeCab ---
+RUN apt update && apt install -y \
     mecab \
     libmecab-dev \
     mecab-ipadic-utf8 \
-    file \
-    && apt -y clean \
+    file
+RUN mecab --version
+
+# --- mecab-ipadic-NEologd ---
+RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
+RUN mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -n -y
+# To install all dictionaries:
+# RUN mecab-ipadic-neologd/bin/install-mecab-ipadic-neologd -n -a -y
+
+ENV MECABRC /etc/mecabrc
+RUN cp /etc/mecabrc /etc/mecabrc.default
+RUN cat /etc/mecabrc.default | sed -e "s/^dicdir/; dicdir/" \
+    | sed -e "/; dicdir/a dicdir = $(find / -path */mecab/dic/mecab-ipadic-neologd 2> /dev/null | head -1)" \
+    > $MECABRC
+COPY tests/mecab/test_mecab.sh ./tests/mecab/test_mecab.sh
+RUN rm -rf mecab-ipadic-neologd
+
+# --- Delete unnecessary packages ---
+RUN apt -y clean \
     && apt -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-# config
-RUN ldconfig
-ENV LC_ALL=C.UTF-8
-ENV LANG=C.UTF-8
-ENV PYTHONPATH /root:$PYTHONPATH
+# --- pip ---
+RUN pip install --upgrade pip
+RUN pip install --upgrade setuptools
 
-# mecab ipadic-neologd
-RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git \
-    && cd mecab-ipadic-neologd \
-    && bin/install-mecab-ipadic-neologd -n -y
-COPY mecabrc /usr/local/etc/mecabrc
-ENV MECABRC /usr/local/etc/mecabrc
-
-# pip
-RUN pip install --upgrade pip && \
-    pip install setuptools -U
-
-# Install Poetry
+# --- Poetry ---
 ENV POETRY_HOME /opt/poetry
 ENV PATH $POETRY_HOME/bin:$PATH
 RUN curl -sSL https://install.python-poetry.org | python3 -
 RUN poetry config virtualenvs.create false
 
-# Install python packages
+# --- Python packages ---
 COPY pyproject.toml ./
 RUN poetry install
 
-# jupyter
-RUN jupyter lab build --minimize False && \
-    jupyter notebook --generate-config
+# --- Jupyter ---
+RUN jupyter lab build --minimize False
+RUN jupyter notebook --generate-config
 
-CMD jupyter lab --allow-root --ip 0.0.0.0 --no-browser
+CMD sh ./tests/mecab/test_mecab.sh

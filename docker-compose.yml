@@ -13,5 +13,5 @@ services:
     volumes:
       - ./:/root
     working_dir: /root
-    command: jupyter lab --allow-root --ip 0.0.0.0 --port ${PORT}
+    command: sh run.sh
     restart: always
