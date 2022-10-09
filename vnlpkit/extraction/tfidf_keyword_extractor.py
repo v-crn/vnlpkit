@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from typing import Iterable, Dict, List
 from sklearn.feature_extraction.text import TfidfVectorizer
-from utils import flatten
+from utils.list_utils import flatten
 
 
 class TfIdfVectorizer(TfidfVectorizer):
