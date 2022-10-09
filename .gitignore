@@ -1,3 +1,6 @@
+### dotfiles ###
+.config/
+
 ### output ###
 **/output/*
 !.gitkeep
