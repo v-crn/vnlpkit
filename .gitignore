@@ -1,3 +1,7 @@
+### output ###
+**/output/*
+!.gitkeep
+
 ### dotenv ###
 .env
 
