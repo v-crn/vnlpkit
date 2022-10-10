@@ -14,7 +14,7 @@ class WordCloudGenerator:
     def generate(
         self,
         tokenized_text: str | None = None,
-        documents: Iterable | None = None,
+        documents: Iterable[str] | None = None,
         tfidf_dict: dict[str, float] | None = None,
         tfidf_json_path: str | None = None,
         fig_path: str | None = None,
