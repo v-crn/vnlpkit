@@ -28,7 +28,7 @@ ENV TERM xterm
 # --- Fonts ---
 RUN apt update && apt install -y \
     fontconfig \
-    fonts-ipaexfont
+    fonts-noto-cjk
 
 # --- MeCab ---
 RUN apt update && apt install -y \
