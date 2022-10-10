@@ -7,9 +7,7 @@ class InsideBracketsExtractor(object):
     """
 
     def __init__(
-            self, copy=True,
-            pattern=r"[【《＼＜\[(「『](.*?)[】》／＞\])」』]",
-            return_type='str'
+        self, copy=True, pattern=r"[【《＼＜\[(「『](.*?)[】》／＞\])」』]", return_type="str"
     ):
         super().__init__(copy)
         self._regex = re.compile(pattern)
@@ -17,6 +15,6 @@ class InsideBracketsExtractor(object):
 
     def apply(self, text):
         text_list = self._regex.findall(text)
-        if self.return_type == 'str':
+        if self.return_type == "str":
             return text_list
-        return ' '.join(text_list)
+        return " ".join(text_list)

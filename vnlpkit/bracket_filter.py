@@ -2,10 +2,10 @@ import re
 
 
 class BracketFilter(object):
-
     def __init__(
-        self, copy=True,
-        pattern=r"【|】|《|》|＼|／|<|>|＜|＞|『|』|「|」"
+        self,
+        copy=True,
+        pattern=r"【|】|《|》|＼|／|<|>|＜|＞|『|』|「|」",
     ):
         super().__init__(copy)
         self.pattern = pattern

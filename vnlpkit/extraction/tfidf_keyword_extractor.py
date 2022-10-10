@@ -1,6 +1,7 @@
+from typing import Dict, Iterable, List
+
 import numpy as np
 import pandas as pd
-from typing import Iterable, Dict, List
 from sklearn.feature_extraction.text import TfidfVectorizer
 from utils.list_utils import flatten
 
@@ -39,7 +40,7 @@ class TfIdfVectorizer(TfidfVectorizer):
             norm=self.norm,
             use_idf=self.use_idf,
             smooth_idf=self.smooth_idf,
-            sublinear_tf=self.sublinear_tf
+            sublinear_tf=self.sublinear_tf,
         )
 
         for a in X:
@@ -54,43 +55,41 @@ class TfIdfVectorizer(TfidfVectorizer):
                     self.vocabulary_[w] = max_idx
 
             # update idf_
-            df = (self.n_docs + self.smooth_idf) / \
-                np.exp(self.idf_ - 1) - self.smooth_idf
+            df = (self.n_docs + self.smooth_idf) / np.exp(
+                self.idf_ - 1
+            ) - self.smooth_idf
             self.n_docs += 1
             df.resize(len(self.vocabulary_), refcheck=False)
             for w in tokens:
                 df[self.vocabulary_[w]] += 1
-            idf = np.log((self.n_docs + self.smooth_idf) /
-                         (df + self.smooth_idf)) + 1
+            idf = np.log((self.n_docs + self.smooth_idf) / (df + self.smooth_idf)) + 1
 
-            self._tfidf._idf_diag = dia_matrix(
-                (idf, 0), shape=(len(idf), len(idf))
-            )
+            self._tfidf._idf_diag = dia_matrix((idf, 0), shape=(len(idf), len(idf)))
 
 
 class TfIdfKeywordExtractor(object):
     def __init__(
         self,
-        input='content',
-        encoding='utf-8',
-        decode_error='strict',
+        input="content",
+        encoding="utf-8",
+        decode_error="strict",
         strip_accents=None,
         lowercase=True,
         preprocessor=None,
         tokenizer=None,
-        analyzer='word',
+        analyzer="word",
         stop_words=None,
-        token_pattern=r'(?u)\b\w\w+\b',
+        token_pattern=r"(?u)\b\w\w+\b",
         ngram_range=(1, 1),
         max_df=1.0,
         min_df=0.03,
         max_features=None,
         freq_dict: Dict[str, int] = None,
         binary=False,
-        norm='l2',
+        norm="l2",
         use_idf=True,
         smooth_idf=True,
-        sublinear_tf=False
+        sublinear_tf=False,
     ):
         self.freq_dict = freq_dict
         self.vectorizer = TfIdfVectorizer(
@@ -113,7 +112,7 @@ class TfIdfKeywordExtractor(object):
             norm=norm,
             use_idf=use_idf,
             smooth_idf=smooth_idf,
-            sublinear_tf=sublinear_tf
+            sublinear_tf=sublinear_tf,
         )
 
     def set_freq_dict(self, raw_documents: Iterable) -> Dict[str, int]:
@@ -137,13 +136,16 @@ class TfIdfKeywordExtractor(object):
             self.freq_dict = dict(
                 sorted(
                     self.vectorizer.vocabulary_.items(),
-                    key=lambda x: x[1], reverse=True
+                    key=lambda x: x[1],
+                    reverse=True,
                 )
             )
         return self.freq_dict
 
     def extract_keywords(
-        self, documents: Iterable[str], n: int = None,
+        self,
+        documents: Iterable[str],
+        n: int = None,
     ) -> List[str]:
         if (documents == []) or not any(documents):
             return []
@@ -165,19 +167,16 @@ class TfIdfKeywordExtractor(object):
 
 
 def _extract_keywords_by_category(params):
-    (
-        df_category, text_col, n, extractor_params, keyword_col
-    ) = params
-    kw_extractor = TfIdfKeywordExtractor(**extractor_params)\
-        if extractor_params is not None\
+    (df_category, text_col, n, extractor_params, keyword_col) = params
+    kw_extractor = (
+        TfIdfKeywordExtractor(**extractor_params)
+        if extractor_params is not None
         else TfIdfKeywordExtractor()
-    category_text = [c for c in set(flatten(df_category[text_col])) if c != '']
+    )
+    category_text = [c for c in set(flatten(df_category[text_col])) if c != ""]
     kw_extractor.set_freq_dict(category_text)
     df_category[keyword_col] = df_category[text_col].apply(
-        lambda x: kw_extractor.extract_keywords(
-            documents=x,
-            n=n
-        )
+        lambda x: kw_extractor.extract_keywords(documents=x, n=n)
     )
     return df_category
 
@@ -188,46 +187,39 @@ def add_tfidf_keyword_column(
     text_col: str,
     n: int = None,
     extractor_params: dict = None,
-    keyword_col: str = None
+    keyword_col: str = None,
 ):
     import multiprocessing
     from concurrent.futures import ProcessPoolExecutor
 
     if keyword_col is None:
-        keyword_col = f'tfidf_keyword_of_{text_col}'
+        keyword_col = f"tfidf_keyword_of_{text_col}"
 
     df = df.copy()
     categories = df[category_col].unique()
     params_list = [
-        (
-            df[df[category_col] == category],
-            text_col, n, extractor_params, keyword_col
-        )
+        (df[df[category_col] == category], text_col, n, extractor_params, keyword_col)
         for category in categories
     ]
 
     max_workers = multiprocessing.cpu_count()
     with ProcessPoolExecutor(max_workers) as executor:
-        df_categories = list(
-            executor.map(_extract_keywords_by_category, params_list)
-        )
+        df_categories = list(executor.map(_extract_keywords_by_category, params_list))
 
     return pd.concat(df_categories)
 
 
 def add_tfidf_combined_keyword_column(
-    df, category_col: str,
+    df,
+    category_col: str,
     main_text_col: str,
     sub_text_mapping: Dict[str, int],
     n: int,
     extractor_params: dict = None,
-    keyword_col: str = None
+    keyword_col: str = None,
 ):
     def combine_keywords(
-        x: pd.Series,
-        main_keyword_col: str,
-        sub_keyword_cols: List[str],
-        n: int = None
+        x: pd.Series, main_keyword_col: str, sub_keyword_cols: List[str], n: int = None
     ) -> List[str]:
         keywords = []
         if n is None:
@@ -239,7 +231,7 @@ def add_tfidf_combined_keyword_column(
         keywords.extend(x[main_keyword_col][:n_main_keywords])
         return keywords
 
-    main_keyword_col = '_main_keyword'
+    main_keyword_col = "_main_keyword"
     df = df.copy()
     df = add_tfidf_keyword_column(
         df=df,
@@ -247,11 +239,11 @@ def add_tfidf_combined_keyword_column(
         text_col=main_text_col,
         n=n,
         extractor_params=extractor_params,
-        keyword_col=main_keyword_col
+        keyword_col=main_keyword_col,
     )
     sub_keyword_cols = []
     for sub_text_col, n_sub_keywords in sub_text_mapping.items():
-        sub_keyword_col = f'_sub_keyword_{sub_text_col}'
+        sub_keyword_col = f"_sub_keyword_{sub_text_col}"
         sub_keyword_cols.append(sub_keyword_col)
         df = add_tfidf_keyword_column(
             df=df,
@@ -259,33 +251,29 @@ def add_tfidf_combined_keyword_column(
             text_col=sub_text_col,
             n=n_sub_keywords,
             extractor_params=extractor_params,
-            keyword_col=sub_keyword_col
+            keyword_col=sub_keyword_col,
         )
     cols = [main_keyword_col] + sub_keyword_cols
 
     if keyword_col is None:
-        sub_text_cols = [
-            str(sub_text_col) for sub_text_col in sub_text_mapping.keys()
-        ]
-        sub_text_cols_name = '_'.join(sub_text_cols)
-        keyword_col = 'tfidf_combined_keyword_of'\
-            f'_{main_text_col}_{sub_text_cols_name}'
+        sub_text_cols = [str(sub_text_col) for sub_text_col in sub_text_mapping.keys()]
+        sub_text_cols_name = "_".join(sub_text_cols)
+        keyword_col = (
+            "tfidf_combined_keyword_of" f"_{main_text_col}_{sub_text_cols_name}"
+        )
 
-    df[keyword_col] = ''
+    df[keyword_col] = ""
     df[keyword_col] = df[cols].apply(
         lambda x: combine_keywords(
-            x, main_keyword_col=main_keyword_col,
-            sub_keyword_cols=sub_keyword_cols,
-            n=n
-        ), axis=1
+            x, main_keyword_col=main_keyword_col, sub_keyword_cols=sub_keyword_cols, n=n
+        ),
+        axis=1,
     )
     df.drop(cols, axis=1, inplace=True)
     return df
 
 
-def count_word_frequency(
-    words: List[str], freq_dict: Dict[str, int] = None
-):
+def count_word_frequency(words: List[str], freq_dict: Dict[str, int] = None):
     from collections import Counter
 
     counter = Counter(freq_dict)

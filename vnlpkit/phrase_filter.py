@@ -1,4 +1,5 @@
 import re
+
 import emoji
 
 
@@ -58,10 +59,7 @@ class EOSPhraseFilter(object):
         )
         text = url.sub("", text)
         # 絵文字の削除
-        text = "".join([
-            w if w not in emoji.UNICODE_EMOJI else "。"
-            for w in text
-        ])
+        text = "".join([w if w not in emoji.UNICODE_EMOJI else "。" for w in text])
 
         # フレーズの抽出
         phrases = [p for p in self.eos_pattern.split(text) if p != ""]
@@ -86,4 +84,4 @@ class EOSPhraseFilter(object):
             n_upper_phrases = upper_size
         else:
             raise ValueError("upper_size must be float or int.")
-        return ' '.join(phrases[:n_upper_phrases])
+        return " ".join(phrases[:n_upper_phrases])
