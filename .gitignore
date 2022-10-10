@@ -6,6 +6,7 @@
 
 ### data ###
 **/data/corpus/*
+work/wordcloud/data/*
 
 ### output ###
 **/output/*
