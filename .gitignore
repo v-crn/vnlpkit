@@ -1,9 +1,14 @@
+### .gitkeep ###
+**/!.gitkeep
+
 ### dotfiles ###
 .config/
 
+### data ###
+**/data/corpus/*
+
 ### output ###
 **/output/*
-!.gitkeep
 
 ### dotenv ###
 .env
