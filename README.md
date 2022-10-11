@@ -12,6 +12,14 @@ cp .env.template .env
 
 ### 2. Run JupyterLab
 
+For M1 Mac:
+
+```sh
+make up_m1
+```
+
+Otherwise:
+
 ```sh
 make up
 ```
