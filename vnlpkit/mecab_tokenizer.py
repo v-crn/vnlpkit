@@ -22,32 +22,43 @@ class MecabTokenizer:
     def run(
         self,
         text: str,
-        target_pos_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        without_pos_1_list: list[str] | None = ["代名詞", "接尾", "非自立"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
         stop_words: list[str] | None = None,
     ) -> str:
         self.stop_words = stop_words if stop_words is not None else []
+        target_pos_0_list = [] if target_pos_0_list is None else target_pos_0_list
+        without_pos_1_list = [] if without_pos_1_list is None else without_pos_1_list
 
         # 分かち書き
         parsed_text = self.tagger.parse(text)
         parsed_lines = parsed_text.split("\n")[:-2]
-        surfaces = [l.split("\t")[0] for l in parsed_lines]
-        features = [l.split("\t")[1] for l in parsed_lines]
+        token_list = []
 
-        # 原型を取得
-        bases = [f.split(",")[6] for f in features]
+        for parsed_line in parsed_lines:
+            surface = parsed_line.split("\t")[0]
 
-        # 各単語を原型に変換する
-        token_list = [b if b != "*" else s for s, b in zip(surfaces, bases)]
+            # 品詞
+            feature = parsed_line.split("\t")[1]
 
-        # 品詞の絞り込み
-        if (target_pos_list is not None) and (len(target_pos_list) > 0):
-            pos = [f.split(",")[0] for f in features]
-            token_list = [t for t, p in zip(token_list, pos) if (p in target_pos_list)]
+            # 原型を取得
+            base = feature.split(",")[6]
 
-        _token_list = []
-        for token in token_list:
+            # Token を取得
+            token = base if base != "*" else surface
+
+            # 品詞の絞り込み
+            pos_0 = feature.split(",")[0]
+            pos_1 = feature.split(",")[1]
+
+            if pos_0 not in target_pos_0_list:
+                continue
+
+            if pos_1 in without_pos_1_list:
+                continue
+
             # stopwords に含まれていれば除去
             if token in self.stop_words:
                 continue
@@ -59,12 +70,11 @@ class MecabTokenizer:
             # アルファベットを小文字に統一
             token = token.lower() if lower_letter_case else token
 
-            _token_list.append(token)
+            token_list.append(token)
 
-        # 半角スペースを挟んで結合
-        tokenized_text = " ".join(_token_list)
+        tokenized_text = " ".join(token_list)
 
-        # 再度ユニコード正規化
+        # Unicode 正規化
         tokenized_text = unicodedata.normalize("NFKC", tokenized_text)
 
         return tokenized_text
@@ -72,7 +82,8 @@ class MecabTokenizer:
     def run_all(
         self,
         documents: list[str],
-        target_pos_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        without_pos_1_list: list[str] | None = ["代名詞", "接尾", "非自立"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
         stop_words: list[str] | None = None,
@@ -80,7 +91,8 @@ class MecabTokenizer:
         def _func(text: str, pbar) -> list[str]:
             tokenized_text = self.run(
                 text,
-                target_pos_list=target_pos_list,
+                target_pos_0_list=target_pos_0_list,
+                without_pos_1_list=without_pos_1_list,
                 remove_hiragana_only=remove_hiragana_only,
                 lower_letter_case=lower_letter_case,
                 stop_words=stop_words,
@@ -97,7 +109,7 @@ class MecabTokenizer:
         self,
         documents: list[str],
         separator: str = "üßäö",
-        target_pos_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
         stop_words: list[str] | None = None,
@@ -110,7 +122,7 @@ class MecabTokenizer:
         text = tmp_separator.join(documents)
         tokenized_documents_text = self.run(
             text,
-            target_pos_list=target_pos_list,
+            target_pos_0_list=target_pos_0_list,
             remove_hiragana_only=remove_hiragana_only,
             lower_letter_case=lower_letter_case,
             stop_words=stop_words,
