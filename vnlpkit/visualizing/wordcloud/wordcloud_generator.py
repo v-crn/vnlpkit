@@ -1,5 +1,6 @@
 import json
 from typing import Iterable
+from collections import Counter
 
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -15,6 +16,7 @@ class WordCloudGenerator:
         self,
         tokenized_text: str | None = None,
         documents: Iterable[str] | None = None,
+        n_token: int | None = None,
         tfidf_dict: dict[str, float] | None = None,
         tfidf_json_path: str | None = None,
         fig_path: str | None = None,
@@ -88,6 +90,7 @@ class WordCloudGenerator:
         tfidf_vectorizer = self.tfidf_vectorizer
 
         if tfidf_dict is not None:
+            tfidf_dict = {k: v for k, v in tfidf_dict.items() if (k not in stopwords) and (v > 0)}
             generated_wc = model.generate_from_frequencies(tfidf_dict)
 
         elif (documents is not None) and (tokenized_text is not None):
@@ -97,7 +100,7 @@ class WordCloudGenerator:
             tfidf_vectorizer.fit(documents)
             tfidf_vec = tfidf_vectorizer.transform([tokenized_text]).toarray()[0]
             tfidf_dict = dict(zip(tfidf_vectorizer.get_feature_names_out(), tfidf_vec))
-            tfidf_dict = {k: v for k, v in tfidf_dict.items() if v > 0}
+            tfidf_dict = {k: v for k, v in tfidf_dict.items() if (k not in stopwords) and (v > 0)}
 
             generated_wc = model.generate_from_frequencies(tfidf_dict)
 
@@ -109,7 +112,12 @@ class WordCloudGenerator:
             self.tfidf_vectorizer = tfidf_vectorizer
 
         elif tokenized_text is not None:
-            generated_wc = model.generate_from_text(tokenized_text)
+            tokenized_text = [token for token in tokenized_text.split(" ") if token not in stopwords]
+            word_frequencies = Counter(tokenized_text)
+            if n_token is not None:
+                word_frequencies = dict(word_frequencies.most_common(n_token))
+
+            generated_wc = model.generate_from_frequencies(word_frequencies)
 
         else:
             raise ValueError(
