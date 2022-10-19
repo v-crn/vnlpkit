@@ -1,8 +1,11 @@
 import json
 from collections import Counter
-from typing import Iterable
+from typing import Iterable, Optional, Dict, Set
 
 import matplotlib.pyplot as plt
+import seaborn as sns
+sns.set()
+import japanize_matplotlib
 from sklearn.feature_extraction.text import TfidfVectorizer
 from wordcloud import WordCloud
 
@@ -14,29 +17,29 @@ class WordCloudGenerator:
 
     def generate(
         self,
-        tokenized_text: str | None = None,
-        documents: Iterable[str] | None = None,
-        n_token: int | None = None,
-        tfidf_dict: dict[str, float] | None = None,
-        freq_dict_path: str | None = None,
-        fig_path: str | None = None,
-        font_path: str | None = None,
-        title: str | None = None,
+        tokenized_text: Optional[str] = None,
+        documents: Optional[Iterable[str]] = None,
+        n_token: Optional[int] = None,
+        tfidf_dict: Optional[Dict[str, float]] = None,
+        freq_dict_path: Optional[str] = None,
+        fig_path: Optional[str] = None,
+        font_path: Optional[str] = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+        title: Optional[str] = None,
         width: int = 400,
         height: int = 200,
         prefer_horizontal: float = 1.0,
         min_font_size: int = 4,
-        stopwords: set[str] | None = None,
-        random_state: int | None = 0,
+        stopwords: Optional[Set[str]] = None,
+        random_state: Optional[int] = 0,
         background_color: str = "black",
-        max_font_size: int | None = None,
+        max_font_size: Optional[int] = None,
         font_step: int = 1,
         mode: str = "RGB",
-        relative_scaling: float | str = "auto",
-        regexp: str | None = r"[\w']+",
+        relative_scaling: Optional[float] = "auto",
+        regexp: Optional[str] = r"[\w']+",
         sep: str = " ",
         collocations: bool = True,
-        colormap: str | None = None,
+        colormap: Optional[str] = None,
         normalize_plurals=True,
         contour_width=0,
         contour_color="black",
@@ -44,7 +47,7 @@ class WordCloudGenerator:
         include_numbers=True,
         min_word_length=0,
         collocation_threshold=30,
-    ) -> dict:
+    ) -> Dict[str, int]:
         """
         --- Main Inputs ---
 
@@ -54,14 +57,11 @@ class WordCloudGenerator:
           - tokenized_text & documents
           - tfidf_dict
 
-        -------------------
-
-        --- Stop Words ---
-
-        - stopwords is used only when calling WordCloud.generate_from_text()
+        日本語を扱う場合は font_path に日本語フォントを指定しないと文字化けします。
 
         ------------------
         """
+        stopwords = list(set(stopwords)) if stopwords is not None else []
         result_dict = {}
         model = WordCloud(
             font_path=font_path,
@@ -119,6 +119,7 @@ class WordCloudGenerator:
             if n_token is not None:
                 freq_dict = dict(freq_dict.most_common(n_token))
 
+            freq_dict = dict(freq_dict)
             generated_wc = model.generate_from_frequencies(freq_dict)
 
         else:
@@ -153,22 +154,22 @@ class WordCloudGenerator:
 
     def generate_from_text(
         self,
-        tokenized_text: str | None = None,
+        tokenized_text: Optional[str] = None,
         **args,
-    ) -> dict:
+    ) -> Dict:
         return self.generate(tokenized_text, **args)
 
     def generate_from_tfidf_for_text_and_documents(
         self,
-        tokenized_text: str | None = None,
-        documents: Iterable[str] | None = None,
+        tokenized_text: Optional[str] = None,
+        documents: Optional[Iterable[str]] = None,
         **args,
-    ) -> dict:
+    ) -> Dict:
         return self.generate(tokenized_text, documents, **args)
 
     def generate_from_tfidf_dict(
         self,
-        tfidf_dict: dict[str, float] | None = None,
+        tfidf_dict: Optional[Dict[str, float]] = None,
         **args,
-    ) -> dict:
+    ) -> Dict:
         return self.generate(tfidf_dict, **args)
