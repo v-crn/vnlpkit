@@ -127,9 +127,15 @@ class WordCloudGenerator:
             )
 
         if freq_dict_path is not None:
-            f = open(freq_dict_path, "w")
-            json.dump(tfidf_dict, f)
-            f.close()
+            with open(freq_dict_path, "w") as f:
+                json.dump(
+                    freq_dict,
+                    f,
+                    ensure_ascii=False,
+                    indent=4,
+                    sort_keys=True,
+                    separators=(",", ": "),
+                )
 
         plt.imshow(generated_wc)
         plt.title(title)
