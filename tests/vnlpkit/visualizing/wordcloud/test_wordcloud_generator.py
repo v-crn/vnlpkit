@@ -24,10 +24,7 @@ def test_generate_from_text() -> None:
 
 def test_generate_from_tfidf_for_text_and_documents() -> None:
     tagger = MeCab.Tagger("-Owakati")
-    parsed_text_list = [
-        tagger.parse(document)
-        for document in documents
-    ]
+    parsed_text_list = [tagger.parse(document) for document in documents]
     print(f"parsed_text_list: {parsed_text_list}")
     tokenized_text = parsed_text_list[0]
     fig_path = "tests/vnlpkit/visualizing/wordcloud/output/wordcloud_tfidf.png"

@@ -4,6 +4,7 @@ from typing import Iterable, Optional, Dict, Set
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 sns.set()
 import japanize_matplotlib
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,7 +24,9 @@ class WordCloudGenerator:
         tfidf_dict: Optional[Dict[str, float]] = None,
         freq_dict_path: Optional[str] = None,
         fig_path: Optional[str] = None,
-        font_path: Optional[str] = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+        font_path: Optional[
+            str
+        ] = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
         title: Optional[str] = None,
         width: int = 400,
         height: int = 200,
