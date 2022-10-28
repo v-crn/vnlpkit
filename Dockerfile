@@ -36,7 +36,6 @@ RUN apt update && apt install -y \
     libmecab-dev \
     mecab-ipadic-utf8 \
     file
-RUN mecab --version
 
 # --- mecab-ipadic-NEologd ---
 RUN git clone --depth 1 https://github.com/neologd/mecab-ipadic-neologd.git
