@@ -1,4 +1,5 @@
 import re
+from typing import List, Optional
 import unicodedata
 
 import MeCab
@@ -11,7 +12,7 @@ tqdm.pandas()
 class MecabTokenizer:
     def __init__(
         self,
-        dict_path: str | None = None,
+        dict_path: Optional[str] = None,
     ) -> None:
         self.tagger = (
             MeCab.Tagger() if dict_path is None else MeCab.Tagger(f"-d {dict_path}")
@@ -22,11 +23,11 @@ class MecabTokenizer:
     def run(
         self,
         text: str,
-        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
-        without_pos_1_list: list[str] | None = ["代名詞", "接尾", "非自立"],
+        target_pos_0_list: Optional[List[str]] = ["名詞", "動詞", "形容詞"],
+        without_pos_1_list: Optional[List[str]] = ["代名詞", "接尾", "非自立"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
-        stop_words: list[str] | None = None,
+        stop_words: Optional[List[str]] = None,
     ) -> str:
         self.stop_words = stop_words if stop_words is not None else []
         target_pos_0_list = [] if target_pos_0_list is None else target_pos_0_list
@@ -82,11 +83,11 @@ class MecabTokenizer:
     def run_all(
         self,
         documents: list[str],
-        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
-        without_pos_1_list: list[str] | None = ["代名詞", "接尾", "非自立"],
+        target_pos_0_list: Optional[List[str]] = ["名詞", "動詞", "形容詞"],
+        without_pos_1_list: Optional[List[str]] = ["代名詞", "接尾", "非自立"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
-        stop_words: list[str] | None = None,
+        stop_words: Optional[List[str]] = None,
     ) -> list[str]:
         def _func(text: str, pbar) -> list[str]:
             tokenized_text = self.run(
@@ -109,10 +110,10 @@ class MecabTokenizer:
         self,
         documents: list[str],
         separator: str = "üßäö",
-        target_pos_0_list: list[str] | None = ["名詞", "動詞", "形容詞"],
+        target_pos_0_list: Optional[List[str]] = ["名詞", "動詞", "形容詞"],
         remove_hiragana_only: bool = False,
         lower_letter_case: bool = True,
-        stop_words: list[str] | None = None,
+        stop_words: Optional[List[str]] = None,
     ) -> list[str]:
         """
         `run_all_with_sep()` は `run_all()` よりも高速ですが、データによってはうまく separator が機能しないことがあります。
